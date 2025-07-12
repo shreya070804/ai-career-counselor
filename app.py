@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 import streamlit as st
 from career_counselor import recommend_careers
 
