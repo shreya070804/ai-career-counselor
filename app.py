@@ -1,15 +1,34 @@
+
+
 import streamlit as st
 from career_counselor import recommend_careers
-import fitz  # PyMuPDF for PDF extraction
+import fitz  # PyMuPDF for PDF
 import matplotlib.pyplot as plt
+from fpdf import FPDF  # ✅ PDF generator
 
-# PDF extractor
+# ✅ PDF extractor
 def extract_text_from_pdf(uploaded_file):
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
         text = ""
         for page in doc:
             text += page.get_text()
         return text
+
+# ✅ PDF report generator
+def generate_pdf(roles, scores):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(200, 10, txt="AI Career Counselor Report", ln=True, align="C")
+    pdf.ln(10)
+
+    for role, score in zip(roles, scores):
+        pdf.cell(200, 10, txt=f"{role}: {score:.2f}% match", ln=True)
+
+    output_path = "/tmp/career_report.pdf"
+    pdf.output(output_path)
+    return output_path
+
 
 # Streamlit UI
 st.set_page_config(page_title="AI Career Counselor", page_icon="🎓")
