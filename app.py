@@ -1,3 +1,5 @@
+from career_counselor import recommend_careers
+
 import streamlit as st
 from career_counselor import recommend_careers
 
