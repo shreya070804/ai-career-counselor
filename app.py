@@ -3,6 +3,12 @@ from career_counselor import recommend_careers
 import fitz  # For PDF text extraction
 import matplotlib.pyplot as plt
 from fpdf import FPDF
+import streamlit as st
+import openai
+
+# 🔐 Load your API key securely from Streamlit Secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+
 
 # ✅ Extract text from PDF
 def extract_text_from_pdf(uploaded_file):
