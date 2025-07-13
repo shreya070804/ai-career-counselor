@@ -1,28 +1,10 @@
 import streamlit as st
 from career_counselor import recommend_careers
-import fitz  # PyMuPDF
+import fitz  # For PDF text extraction
 import matplotlib.pyplot as plt
 from fpdf import FPDF
-import datetime
 
-# 🔹 Page config & styling
-st.set_page_config(page_title="AI Career Counselor", page_icon="🎓", layout="centered")
-st.markdown("""
-    <style>
-    .reportview-container {
-        padding: 2rem 2rem 2rem 2rem;
-    }
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
-        background-color: #f9f9f9;
-        color: #333;
-    }
-    .css-1aumxhk, .css-1d391kg {
-        font-size: 18px;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# 🔹 Helper Functions
+# ✅ Extract text from PDF
 def extract_text_from_pdf(uploaded_file):
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
         text = ""
@@ -30,20 +12,53 @@ def extract_text_from_pdf(uploaded_file):
             text += page.get_text()
         return text
 
-def generate_pdf(roles, scores):
+# ✅ Calculate Resume Score
+def calculate_resume_score(text):
+    score = 0
+    feedback = []
+
+    # Length check
+    if len(text) > 1000:
+        score += 30
+        feedback.append("✅ Sufficient content length")
+    else:
+        feedback.append("⚠️ Resume is too short")
+
+    # Keyword check
+    keywords = ["project", "intern", "python", "machine learning", "data", "development", "design", "analysis", "research"]
+    matched_keywords = [kw for kw in keywords if kw.lower() in text.lower()]
+    score += len(matched_keywords) * 5
+
+    if matched_keywords:
+        feedback.append(f"✅ Contains keywords: {', '.join(matched_keywords)}")
+    else:
+        feedback.append("⚠️ No strong keywords found")
+
+    if score > 100:
+        score = 100
+
+    return score, feedback
+
+# ✅ Generate PDF Report
+def generate_pdf(roles, scores, score=None):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
     pdf.cell(200, 10, txt="AI Career Counselor Report", ln=True, align="C")
     pdf.ln(10)
 
-    for role, score in zip(roles, scores):
-        pdf.cell(200, 10, txt=f"{role}: {score:.2f}% match", ln=True)
+    if score is not None:
+        pdf.cell(200, 10, txt=f"Resume Score: {score}/100", ln=True)
+        pdf.ln(5)
+
+    for role, match in zip(roles, scores):
+        pdf.cell(200, 10, txt=f"{role}: {match:.2f}% match", ln=True)
 
     output_path = "/tmp/career_report.pdf"
     pdf.output(output_path)
     return output_path
 
+# ✅ Course Recommendations
 def get_course_recommendations(top_career):
     career_courses = {
         "Data Scientist": [
@@ -69,72 +84,71 @@ def get_course_recommendations(top_career):
     }
     return career_courses.get(top_career, [])
 
-# 🔹 Header
-st.markdown("## 🎓 Welcome to the AI Career Counselor")
-st.markdown("""
-Upload your **resume** and write a bit about yourself (goals, skills, interests),
-and we’ll recommend your **top 3 careers** along with a **PDF report** and suggested **courses** to explore.
-""")
+# 🔷 Streamlit UI Setup
+st.set_page_config(page_title="AI Career Counselor", page_icon="🎓")
+st.title("🎓 AI Career Counselor")
+st.write("Upload your resume and describe yourself to get personalized career recommendations.")
 
-# 🔹 Input Section
-st.markdown("### 📄 Step 1: Upload Your Resume")
-resume_file = st.file_uploader("Upload a resume (.txt or .pdf)", type=["txt", "pdf"])
+resume_file = st.file_uploader("📄 Upload Resume (.txt or .pdf)", type=["txt", "pdf"])
+personality = st.text_area("🧠 Describe yourself (interests, goals, skills, etc.)")
 
-st.markdown("### 🧠 Step 2: Describe Yourself")
-personality = st.text_area("Tell us about your interests, goals, and strengths:", height=150)
-
-email = st.text_input("📧 (Optional) Enter your email to receive the report")
-
-# 🔍 Prediction Logic
+# 🔍 On Submit
 if st.button("🔍 Suggest My Career"):
     if resume_file and personality:
-        with st.spinner("🔎 Analyzing your inputs..."):
-            if resume_file.type == "application/pdf":
-                resume_text = extract_text_from_pdf(resume_file)
-            else:
-                resume_text = resume_file.read().decode("utf-8")
+        # 1. Extract resume text
+        if resume_file.type == "application/pdf":
+            resume_text = extract_text_from_pdf(resume_file)
+        else:
+            resume_text = resume_file.read().decode("utf-8")
 
-            recommendations = recommend_careers(resume_text, personality)
+        # 2. Calculate resume score
+        resume_score, feedback = calculate_resume_score(resume_text)
 
-            # Results
-            st.success("✅ Top 3 Career Recommendations:")
-            for role, score in recommendations:
-                st.markdown(f"🎯 **{role}** — {score:.2%} match")
+        st.subheader("📈 Resume Score")
+        st.metric(label="Score", value=f"{resume_score}/100")
+        for f in feedback:
+            st.write(f)
 
-            # Bar Chart
-            roles, scores = zip(*recommendations)
-            scores = [s * 100 for s in scores]
+        # 3. Recommend careers
+        recommendations = recommend_careers(resume_text, personality)
 
+        # 4. Show top 3 results
+        st.success("✅ Top 3 Career Recommendations:")
+        for role, score in recommendations:
+            st.markdown(f"🎯 **{role}** — {score:.2%} match")
+
+        # 5. Bar Chart
+        roles, scores = zip(*recommendations)
+        scores = [s * 100 for s in scores]
+
+        st.markdown("### 📊 Career Match Breakdown")
+        fig, ax = plt.subplots()
+        ax.barh(roles, scores, color="skyblue")
+        ax.set_xlabel("Match %")
+        ax.set_title("Career Match")
+        st.pyplot(fig)
+
+        # 6. Download PDF
+        st.markdown("### 📥 Download Report")
+        pdf_path = generate_pdf(roles, scores, score=resume_score)
+        with open(pdf_path, "rb") as pdf_file:
+            st.download_button(
+                label="Download Report as PDF",
+                data=pdf_file,
+                file_name="career_report.pdf",
+                mime="application/pdf"
+            )
+
+        # 7. Show Course Recommendations
+        top_career = roles[0]
+        courses = get_course_recommendations(top_career)
+
+        if courses:
             st.markdown("---")
-            st.markdown("### 📊 Career Match Breakdown")
-            fig, ax = plt.subplots()
-            ax.barh(roles, scores, color="skyblue")
-            ax.set_xlabel("Match %")
-            ax.set_title("Career Match Breakdown")
-            st.pyplot(fig)
-
-            # PDF Download
-            st.markdown("### 📥 Download Your Personalized PDF Report")
-            pdf_path = generate_pdf(roles, scores)
-            with open(pdf_path, "rb") as pdf_file:
-                st.download_button(
-                    label="Download Report as PDF",
-                    data=pdf_file,
-                    file_name="career_report.pdf",
-                    mime="application/pdf"
-                )
-
-            # Course Recommendations
-            top_career = roles[0]
-            courses = get_course_recommendations(top_career)
-
-            if courses:
-                st.markdown("---")
-                st.subheader(f"📚 Recommended Courses for **{top_career}**")
-                for name, link in courses:
-                    st.markdown(f"- [{name}]({link})")
-            else:
-                st.info("No course recommendations available for this role yet.")
-
+            st.subheader(f"📚 Recommended Courses for **{top_career}**")
+            for name, link in courses:
+                st.markdown(f"- [{name}]({link})")
+        else:
+            st.info("No course recommendations available yet.")
     else:
-        st.warning("⚠️ Please upload a resume and write your description first.")
+        st.warning("⚠️ Please upload your resume and fill in the description.")
