@@ -4,6 +4,31 @@ import fitz  # PyMuPDF for PDF extraction
 import matplotlib.pyplot as plt
 from fpdf import FPDF  # PDF generator
 
+st.set_page_config(page_title="AI Career Counselor", page_icon="🎓", layout="centered")
+
+# Custom CSS styling
+st.markdown("""
+    <style>
+    .reportview-container {
+        padding: 2rem 2rem 2rem 2rem;
+    }
+    .stTextInput>div>div>input {
+        background-color: #f9f9f9;
+        color: #333;
+    }
+    .stTextArea>div>div>textarea {
+        background-color: #f9f9f9;
+        color: #333;
+    }
+    .css-1aumxhk {
+        font-size: 18px;
+    }
+    .css-1d391kg {
+        font-size: 16px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # ✅ Course recommendations
 def get_course_recommendations(top_career):
     career_courses = {
