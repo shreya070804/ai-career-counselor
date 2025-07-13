@@ -3,11 +3,35 @@ from career_counselor import recommend_careers
 import fitz  # For PDF text extraction
 import matplotlib.pyplot as plt
 from fpdf import FPDF
+
 import streamlit as st
 import openai
 
-# 🔐 Load your API key securely from Streamlit Secrets
+# 🔐 Securely load your API key (after saving in Streamlit secrets)
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+# 🌟 Streamlit UI
+st.set_page_config(page_title="AI Chatbot", page_icon="💬")
+st.title("💬 Career Chatbot")
+st.write("Ask me anything about careers, skills, or future planning!")
+
+# 🧠 Chat Input
+user_input = st.text_input("👤 You:")
+
+if user_input:
+    with st.spinner("Thinking..."):
+        # 💬 Send to ChatGPT
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You're a friendly career counselor chatbot."},
+                {"role": "user", "content": user_input}
+            ]
+        )
+
+        reply = response["choices"][0]["message"]["content"]
+        st.success("🤖 Chatbot:")
+        st.write(reply)
 
 
 # ✅ Extract text from PDF
