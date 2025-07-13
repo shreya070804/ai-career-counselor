@@ -5,8 +5,20 @@ import matplotlib.pyplot as plt
 from fpdf import FPDF
 import openai
 
-# ✅ Load OpenAI API Key
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# Use your API key (from secrets or directly if local)
+openai.api_key = "YOUR_OPENAI_API_KEY"
+
+response = openai.chat.completions.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": "You are a helpful AI career counselor."},
+        {"role": "user", "content": "What career is best for someone who loves design and logic?"}
+    ]
+)
+
+reply = response.choices[0].message.content
+print(reply)
+
 
 # ✅ PDF Extraction Function
 def extract_text_from_pdf(uploaded_file):
