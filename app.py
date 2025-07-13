@@ -1,11 +1,8 @@
-from career_counselor import recommend_careers
-
 import streamlit as st
 from career_counselor import recommend_careers
 
 st.set_page_config(page_title="AI Career Counselor", page_icon="🎓")
 st.title("🎓 AI Career Counselor")
-
 st.write("Upload your resume (in .txt format) and describe yourself to get career recommendations.")
 
 resume_file = st.file_uploader("📄 Upload Resume (.txt)", type=["txt"])
@@ -21,5 +18,6 @@ if st.button("🔍 Suggest My Career"):
             st.markdown(f"🎯 **{role}** — {score:.2%} match")
     else:
         st.warning("⚠️ Please upload your resume and fill in the description.")
+
 
 
