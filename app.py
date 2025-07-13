@@ -3,33 +3,32 @@ from career_counselor import recommend_careers
 import fitz  # For PDF text extraction
 import matplotlib.pyplot as plt
 from fpdf import FPDF
-
 import streamlit as st
-import openai
+from openai import OpenAI
 
-# 🔐 Securely load your API key (after saving in Streamlit secrets)
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+# ✅ Load OpenAI securely from secrets
+client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# 🌟 Streamlit UI
-st.set_page_config(page_title="AI Chatbot", page_icon="💬")
+# ✅ App UI
+st.set_page_config(page_title="Career Chatbot", page_icon="💬")
 st.title("💬 Career Chatbot")
-st.write("Ask me anything about careers, skills, or future planning!")
+st.write("Ask anything about your career, strengths, or goals!")
 
-# 🧠 Chat Input
-user_input = st.text_input("👤 You:")
+# ✅ Input box
+user_input = st.text_input("👤 You:", placeholder="e.g., What career suits a person who loves design?")
 
+# ✅ Generate ChatGPT response
 if user_input:
     with st.spinner("Thinking..."):
-        # 💬 Send to ChatGPT
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You're a friendly career counselor chatbot."},
+                {"role": "system", "content": "You are a helpful career guidance assistant."},
                 {"role": "user", "content": user_input}
             ]
         )
 
-        reply = response["choices"][0]["message"]["content"]
+        reply = response.choices[0].message.content
         st.success("🤖 Chatbot:")
         st.write(reply)
 
