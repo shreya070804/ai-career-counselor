@@ -65,5 +65,15 @@ if st.button("🔍 Suggest My Career"):
         ax.set_title("Career Match Breakdown")
         st.pyplot(fig)
 
+        # ✅ 📄 PDF Download (Indented correctly)
+        pdf_path = generate_pdf(roles, scores)
+        with open(pdf_path, "rb") as pdf_file:
+            st.download_button(
+                label="📥 Download Report as PDF",
+                data=pdf_file,
+                file_name="career_report.pdf",
+                mime="application/pdf"
+            )
+
     else:
         st.warning("⚠️ Please upload your resume and fill in the description.")
