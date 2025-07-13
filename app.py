@@ -6,6 +6,34 @@ import fitz  # PyMuPDF for PDF
 import matplotlib.pyplot as plt
 from fpdf import FPDF  # ✅ PDF generator
 
+def get_course_recommendations(top_career):
+    career_courses = {
+        "Data Scientist": [
+            ("Data Science Specialization – Coursera", "https://www.coursera.org/specializations/jhu-data-science"),
+            ("Intro to Machine Learning – Udacity", "https://www.udacity.com/course/intro-to-machine-learning--ud120")
+        ],
+        "Web Developer": [
+            ("Meta Front-End Developer – Coursera", "https://www.coursera.org/professional-certificates/meta-front-end-developer"),
+            ("The Odin Project – Free", "https://www.theodinproject.com/")
+        ],
+        "UI/UX Designer": [
+            ("Google UX Design – Coursera", "https://www.coursera.org/professional-certificates/google-ux-design"),
+            ("FreeCodeCamp UX Guide", "https://www.freecodecamp.org/news/learn-ui-ux-design/")
+        ],
+        "AI Engineer": [
+            ("AI for Everyone – Andrew Ng", "https://www.coursera.org/learn/ai-for-everyone"),
+            ("Deep Learning Specialization", "https://www.coursera.org/specializations/deep-learning")
+        ],
+        "Cybersecurity Analyst": [
+            ("IBM Cybersecurity Analyst – Coursera", "https://www.coursera.org/professional-certificates/ibm-cybersecurity-analyst"),
+            ("Introduction to Cybersecurity – edX", "https://www.edx.org/course/introduction-to-cybersecurity")
+        ]
+        # Add more roles as needed
+    }
+
+    return career_courses.get(top_career, [])
+
+
 # ✅ PDF extractor
 def extract_text_from_pdf(uploaded_file):
     with fitz.open(stream=uploaded_file.read(), filetype="pdf") as doc:
@@ -77,3 +105,15 @@ if st.button("🔍 Suggest My Career"):
 
     else:
         st.warning("⚠️ Please upload your resume and fill in the description.")
+
+# 🎓 Course Recommendations
+top_career = roles[0]  # most matched career
+courses = get_course_recommendations(top_career)
+
+if courses:
+    st.subheader(f"📚 Recommended Courses for **{top_career}**")
+    for name, link in courses:
+        st.markdown(f"- [{name}]({link})")
+else:
+    st.info("No course recommendations available for this role yet.")
+
