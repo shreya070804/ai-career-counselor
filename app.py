@@ -6,31 +6,28 @@ from fpdf import FPDF
 import streamlit as st
 from openai import OpenAI
 
-# ✅ Load OpenAI securely from secrets
+# ✅ Load OpenAI API key from Streamlit secrets
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
-# ✅ App UI
 st.set_page_config(page_title="Career Chatbot", page_icon="💬")
 st.title("💬 Career Chatbot")
-st.write("Ask anything about your career, strengths, or goals!")
+st.write("Ask me anything about careers, interests, or future roles!")
 
-# ✅ Input box
-user_input = st.text_input("👤 You:", placeholder="e.g., What career suits a person who loves design?")
+user_input = st.text_input("👤 You:", placeholder="e.g. What job suits someone good at math and design?")
 
-# ✅ Generate ChatGPT response
 if user_input:
     with st.spinner("Thinking..."):
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a helpful career guidance assistant."},
+                {"role": "system", "content": "You are a helpful and friendly AI career counselor."},
                 {"role": "user", "content": user_input}
             ]
         )
-
         reply = response.choices[0].message.content
         st.success("🤖 Chatbot:")
         st.write(reply)
+
 
 
 # ✅ Extract text from PDF
