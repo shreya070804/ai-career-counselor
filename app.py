@@ -5,7 +5,8 @@ st.set_page_config(page_title="AI Career Counselor", page_icon="🎓")
 st.title("🎓 AI Career Counselor")
 st.write("Upload your resume (in .txt format) and describe yourself to get career recommendations.")
 
-resume_file = st.file_uploader("📄 Upload Resume (.txt)", type=["txt"])
+resume_file = st.file_uploader("📄 Upload Resume (.txt or .pdf)", type=["txt", "pdf"])
+
 personality = st.text_area("🧠 Describe yourself (interests, goals, skills, etc.)")
 
 if st.button("🔍 Suggest My Career"):
